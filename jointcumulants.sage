@@ -42,14 +42,14 @@ def jconnectednonflat(rr):
     print("Connected non-flat set partitions:",len(cnfp))
     return cnfp
 
-def jgraphs(G,E,setpartition):
+def jgraphs(G,EP,setpartition):
     rr=[len(set(flatten(g))) for g in G];
     n=len(G); rhoG = []
-    ee=[len(set(flatten(e))) for e in E];
+    ee=[len(set(flatten(e))) for e in EP];
     for j in range(n):
         for hop in G[j]: rhoG.append([hop[0],hop[1]])
-        for l in range(len(E)):
-            F=E[l]
+        for l in range(len(EP)):
+            F=EP[l]
             for i in F: rhoG.append([i,sum(rr)+l+1]);
     for i in setpartition:
         if(len(i)>1):
@@ -60,29 +60,29 @@ def jgraphs(G,E,setpartition):
     for i in rhoG: i.sort()
     return rhoG
 
-def jc(d,G,E,mu,H):
+def jc(d,G,EP,mu,H):
     rr=[len(set(flatten(g))) for g in G];
     if(sum(rr)!=len(set(flatten(G)))):
         print("Wrong G format");
         return 0
     n=len(G);
-    ee=[len(set(flatten(e))) for e in E];
+    ee=[len(set(flatten(e))) for e in EP];
     x,y=var("x,y")
     jcumulants = 0; ii=0
     z = dict(enumerate([str(x)+str(key)+str(x)+str(l) for key in range(1,sum(rr)+1) for l in range(1,d+1)], start=1))
     cnfp=jconnectednonflat(rr)
     for setpartition in cnfp: 
         ii=ii+1;print('[%d/%d]\r'%(ii,len(cnfp)),end="")
-        rhoG=jgraphs(G,E,setpartition)
+        rhoG=jgraphs(G,EP,setpartition)
         for j in range(n):
-            m=len(E); 
+            m=len(EP); 
             for l in range(m+1):
                 for ld in range(1,d+1): z[d*(sum(rr)+l)+ld] = var(str(y)+str(l)+str('_')+str(ld))
         for key in range(1,sum(rr)+1): 
             for l in range(1,d+1): z[key*d+l] = var(str(x)+str(key)+str(x)+str(l))
         edgesrhoG = [i for n, i in enumerate(rhoG) if i not in rhoG[:n]]
         vertrhoG = set(flatten(edgesrhoG));
-        m=len(E); 
+        m=len(EP); 
         for l in range(m): vertrhoG.remove(sum(rr)+l+1);
         strr = '*λ'*len(vertrhoG)
         for i in vertrhoG:
@@ -95,5 +95,4 @@ def jc(d,G,E,mu,H):
     print("\n");
     jcumulants = simplify(jcumulants).canonicalize_radical().maxima_methods().rootscontract().simplify()
     return jcumulants._sympy_()
-
 

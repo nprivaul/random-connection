@@ -46,12 +46,12 @@ def connectednonflat(n,r):
     print("Connected non-flat set partitions:",len(cnfp))
     return cnfp
 
-def graphs(G,E,setpartition,n):
+def graphs(G,EP,setpartition,n):
     r=len(set(flatten(G)));rhoG = []
     for j in range(n):
         for hop in G: rhoG.append([r*j+hop[0],r*j+hop[1]])
-        for l in range(len(E)):
-            F=E[l]
+        for l in range(len(EP)):
+            F=EP[l]
             for i in F: rhoG.append([j*r+i,n*r+l+1]);
     for i in setpartition:
         if(len(i)>1):
@@ -62,15 +62,15 @@ def graphs(G,E,setpartition,n):
     for i in rhoG: i.sort()
     return rhoG
 
-def inner(n,d,G,E,mu,H,setpartition,z,r):
-    rhoG=graphs(G,E,setpartition,n)
-    for ll in range(len(E)+1):
+def inner(n,d,G,EP,mu,H,setpartition,z,r):
+    rhoG=graphs(G,EP,setpartition,n)
+    for ll in range(len(EP)+1):
         for l in range(1,d+1): z[d*(n*r+ll)+l] = var(str(y)+str(ll)+str('_')+str(l))
     for key in range(1,n*r+1): 
         for l in range(1,d+1): z[key*d+l] = var(str(x)+str(key)+str(x)+str(l))
     edgesrhoG = [i for n, i in enumerate(rhoG) if i not in rhoG[:n]]
     vertrhoG = set(flatten(edgesrhoG));
-    for ll in range(len(E)): vertrhoG.remove(n*r+ll+1);
+    for ll in range(len(EP)): vertrhoG.remove(n*r+ll+1);
     strr = '*λ'*len(vertrhoG)
     for i in vertrhoG:
         for l in range(1,d+1): strr = '*mu({},{},{})'.format(z[i*d+l],λ,β) + strr
@@ -87,10 +87,10 @@ def collect_result(result):
     iii=iii+1;
     if (mod(iii,100)==0):
         tim=(time()-t_start2)*(lencnfp-iii)/iii/60
-        print('[%d]\r'%(iii),'Est remaining time (minutes):%d'%(tim),end="")
+        print('[%d]\r'%(iii),'Est. remaining time (minutes):%d'%(tim),end="")
     cumulants+=result
 	
-def c(n,d,G,E,mu,H):
+def c(n,d,G,EP,mu,H):
     global cumulants
     global iii
     global t_start2
@@ -105,7 +105,7 @@ def c(n,d,G,E,mu,H):
     lencnfp=len(cnfp)
     pool = mp.Pool(4) # pool = mp.Pool(mp.cpu_count())
     for setpartition in cnfp: 
-        pool.apply_async(func = inner, args=(n,d,G,E,mu,H,setpartition,z,r), callback=collect_result)
+        pool.apply_async(func = inner, args=(n,d,G,EP,mu,H,setpartition,z,r), callback=collect_result)
     pool.close()
     pool.join()
     print("\n");
